@@ -1,89 +1,89 @@
-import csv
 import os
 
-# Nombre del archivo CSV
-CSV_FILE = "tasks.csv"
+# Lista global para almacenar las tareas
+tasks = []
 
-# Función para cargar tareas desde el archivo CSV
-def load_tasks():
-    tasks = []
-    if os.path.exists(CSV_FILE):
-        with open(CSV_FILE, mode='r') as file:
-            reader = csv.DictReader(file)
-            tasks = list(reader)
-    return tasks
+def clear_console():
+    """Limpia la consola para una mejor experiencia del usuario."""
+    os.system("cls" if os.name == "nt" else "clear")
 
-# Función para guardar tareas en el archivo CSV
-def save_tasks(tasks):
-    with open(CSV_FILE, mode='w', newline='') as file:
-        fieldnames = ["id", "task", "status"]
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(tasks)
-
-# Función para agregar una nueva tarea
-def add_task(task_name):
-    tasks = load_tasks()
-    task_id = len(tasks) + 1
-    tasks.append({"id": str(task_id), "task": task_name, "status": "pendiente"})
-    save_tasks(tasks)
-    print(f"Tarea '{task_name}' añadida.")
-
-# Función para listar todas las tareas
-def list_tasks():
-    tasks = load_tasks()
-    if tasks:
-        print("\nTareas:")
-        for task in tasks:
-            print(f"[{task['id']}] {task['task']} - {task['status']}")
+def display_tasks():
+    """Muestra todas las tareas."""
+    if not tasks:
+        print("📋 No tienes tareas en tu lista.")
     else:
-        print("No hay tareas registradas.")
+        print("\n📋 Lista de Tareas:")
+        for index, task in enumerate(tasks, start=1):
+            status = "✅" if task["completed"] else "❌"
+            print(f"{index}. {task['name']} {status}")
 
-# Función para completar una tarea
-def complete_task(task_id):
-    tasks = load_tasks()
-    for task in tasks:
-        if task["id"] == str(task_id):
-            task["status"] = "completada"
-            save_tasks(tasks)
-            print(f"Tarea '{task_id}' marcada como completada.")
-            return
-    print(f"Tarea con ID '{task_id}' no encontrada.")
+def add_task():
+    """Agrega una nueva tarea."""
+    task_name = input("➕ Ingresa el nombre de la tarea: ").strip()
+    if task_name:
+        tasks.append({"name": task_name, "completed": False})
+        print(f"✅ Tarea '{task_name}' añadida con éxito.")
+    else:
+        print("⚠️ El nombre de la tarea no puede estar vacío.")
 
-# Función para eliminar una tarea
-def delete_task(task_id):
-    tasks = load_tasks()
-    tasks = [task for task in tasks if task["id"] != str(task_id)]
-    save_tasks(tasks)
-    print(f"Tarea '{task_id}' eliminada.")
+def complete_task():
+    """Marca una tarea como completada."""
+    display_tasks()
+    try:
+        task_number = int(input("\n🔢 Ingresa el número de la tarea a completar: "))
+        if 1 <= task_number <= len(tasks):
+            tasks[task_number - 1]["completed"] = True
+            print("✅ Tarea marcada como completada.")
+        else:
+            print("⚠️ Número inválido.")
+    except ValueError:
+        print("⚠️ Debes ingresar un número.")
 
-# Menú principal
-def main():
+def delete_task():
+    """Elimina una tarea."""
+    display_tasks()
+    try:
+        task_number = int(input("\n🗑️ Ingresa el número de la tarea a eliminar: "))
+        if 1 <= task_number <= len(tasks):
+            removed_task = tasks.pop(task_number - 1)
+            print(f"🗑️ Tarea '{removed_task['name']}' eliminada con éxito.")
+        else:
+            print("⚠️ Número inválido.")
+    except ValueError:
+        print("⚠️ Debes ingresar un número.")
+
+def main_menu():
+    """Muestra el menú principal."""
     while True:
-        print("\n--- Administrador de Tareas ---")
-        print("1. Listar tareas")
-        print("2. Agregar tarea")
-        print("3. Completar tarea")
-        print("4. Eliminar tarea")
+        clear_console()
+        print("📝 Administrador de Tareas")
+        print("1. Ver Tareas")
+        print("2. Agregar Tarea")
+        print("3. Completar Tarea")
+        print("4. Eliminar Tarea")
         print("5. Salir")
-        choice = input("Selecciona una opción: ")
+
+        choice = input("\nSelecciona una opción (1-5): ").strip()
 
         if choice == "1":
-            list_tasks()
+            clear_console()
+            display_tasks()
+            input("\nPresiona Enter para continuar...")
         elif choice == "2":
-            task_name = input("Nombre de la tarea: ")
-            add_task(task_name)
+            add_task()
+            input("\nPresiona Enter para continuar...")
         elif choice == "3":
-            task_id = input("ID de la tarea a completar: ")
-            complete_task(task_id)
+            complete_task()
+            input("\nPresiona Enter para continuar...")
         elif choice == "4":
-            task_id = input("ID de la tarea a eliminar: ")
-            delete_task(task_id)
+            delete_task()
+            input("\nPresiona Enter para continuar...")
         elif choice == "5":
-            print("¡Hasta luego!")
+            print("👋 ¡Gracias por usar el Administrador de Tareas!")
             break
         else:
-            print("Opción no válida, intenta nuevamente.")
+            print("⚠️ Opción inválida. Inténtalo de nuevo.")
+            input("\nPresiona Enter para continuar...")
 
 if __name__ == "__main__":
-    main()
+    main_menu()
